@@ -121,15 +121,17 @@ internal class GameEngine : IGameEngine
         int characterRow = 0;
         int characterColumn = 0;
 
+        monsters.Add(GenerateNewMonster(character.Symbol));
+
+        AttackPlayerIfNearby(characterRow, characterColumn, monsters, character);
+
         while (character.IsAlive)
         {
-            Monster monster = new Monster();
+            HashSet<Monster> deadMonsters = monsters.Where(m => !m.IsAlive).ToHashSet();
 
-            SetRandomCoordinatesForMonster(monster, character.Symbol);
+            RemoveDeadMonstersFromField(deadMonsters);
 
-            monsters.Add(monster);
-
-            this.field[monster.Row, monster.Column] = DefaultMonsterSymbol;
+            monsters.RemoveWhere(m => !m.IsAlive);
 
             PrintCharacterInfo(character);
 
@@ -140,7 +142,35 @@ internal class GameEngine : IGameEngine
             switch (action)
             {
                 case 1:
-                    // ToDo: Implement attack logic...
+
+                    List<Monster> targets =
+                        FindPossibleTargets(characterRow, characterColumn, monsters, character.Range);
+
+                    if (!targets.Any())
+                    {
+                        Console.WriteLine($"{Environment.NewLine}No available targets in your range!");
+                        continue;
+                    }
+
+                    PrintTargetsInfo(targets);
+
+                    int indexOfTarget = ChooseTargetToAttack(targets.Count - 1);
+
+                    Monster target = targets[indexOfTarget];
+
+                    Monster monsterToDamage = monsters.First(m => m.Row == target.Row && m.Column == target.Column);
+
+                    monsterToDamage.Health -= character.Damage;
+
+                    MoveMonstersTowardsPlayer(characterRow, characterColumn, monsters, character.Symbol);
+
+                    AttackPlayerIfNearby(characterRow, characterColumn, monsters, character);
+
+                    if (character.IsAlive)
+                    {
+                        monsters.Add(GenerateNewMonster(character.Symbol));
+                    }
+
                     break;
 
                 case 2:
@@ -155,23 +185,175 @@ internal class GameEngine : IGameEngine
                         continue;
                     }
 
+                    MoveMonstersTowardsPlayer(characterRow, characterColumn, monsters, character.Symbol);
+
+                    AttackPlayerIfNearby(characterRow, characterColumn, monsters, character);
+
+                    if (character.IsAlive)
+                    {
+                        monsters.Add(GenerateNewMonster(character.Symbol));
+                    }
+
                     break;
             }
-
-            PrintCharacterInfo(character);
-
-            PrintField();
         }
 
-        Console.WriteLine("Game over!");
+        RemoveDeadMonstersFromField(monsters.Where(m => !m.IsAlive).ToHashSet());
+
+        this.field[characterRow, characterColumn] = DefaultDeadPlayerSymbol;
+
+        PrintField();
+
+        Console.WriteLine($"{Environment.NewLine}YOU DIED. GAME OVER!{Environment.NewLine}");
     }
+
+    private void AttackPlayerIfNearby(int characterRow, int characterColumn, HashSet<Monster> monsters, BaseGameModel character)
+    {
+        foreach (Monster monster in monsters)
+        {
+            if ((monster.Row == characterRow - 1 || monster.Row == characterRow + 1)
+              && (monster.Column == characterColumn - 1 || monster.Column == characterColumn + 1))
+            {
+                character.Health -= monster.Damage;
+            }
+
+            if (!character.IsAlive)
+            {
+                return;
+            }
+        }
+    }
+
+    private Monster GenerateNewMonster(char characterSymbol)
+    {
+        Monster monster = new Monster();
+
+        SetRandomCoordinatesForMonster(monster, characterSymbol);
+
+        this.field[monster.Row, monster.Column] = DefaultMonsterSymbol;
+
+        return monster;
+    }
+
+    private int ChooseTargetToAttack(int lastTargetIndex)
+    {
+        int choice;
+        do
+        {
+            bool result = int.TryParse(Console.ReadLine(), out choice);
+
+            if (!result)
+            {
+                Console.WriteLine("Invalid target choice!");
+            }
+        } while (choice < 0 || choice > lastTargetIndex);
+
+        return choice;
+    }
+
+    private void PrintTargetsInfo(IList<Monster> targets)
+    {
+        for (int ind = 0; ind < targets.Count; ind++)
+        {
+            Monster target = targets[ind];
+
+            Console.WriteLine($"{ind}) target with remaining blood: {target.Health} at coordinates ({target.Row}, {target.Column})");
+        }
+    }
+
+    private List<Monster> FindPossibleTargets(int row, int column, ICollection<Monster> monsters, int attackRange)
+    {
+        List<Monster> targets = new List<Monster>();
+
+        foreach (Monster monster in monsters)
+        {
+            int rowDifference = Math.Abs(row - monster.Row);
+            int columnDifference = Math.Abs(column - monster.Column);
+
+            int distance = Math.Max(rowDifference, columnDifference);
+
+            if (distance <= attackRange)
+            {
+                targets.Add(monster);
+            }
+        }
+
+        return targets;
+    }
+
+
+    private void RemoveDeadMonstersFromField(ICollection<Monster> deadMonsters)
+    {
+        foreach (Monster monster in deadMonsters)
+        {
+            this.field[monster.Row, monster.Column] = DefaultFieldSymbol;
+        }
+    }
+
+    private void MoveMonstersTowardsPlayer(int playerRow, int playerColumn, ICollection<Monster> monsters, char playerSymbol)
+    {
+        foreach (Monster monster in monsters)
+        {
+            // Move the monster one step closer to the player
+            if (playerRow > monster.Row)
+            {
+                if (IsValidMonsterMove(monster.Row + 1, monster.Column, playerSymbol))
+                {
+                    // Update monster's position
+                    UpdateMonsterPosition(monster, monster.Row + 1, monster.Column);
+                }
+            }
+            else if (playerRow < monster.Row)
+            {
+                if (IsValidMonsterMove(monster.Row - 1, monster.Column, playerSymbol))
+                {
+                    // Update monster's position
+                    UpdateMonsterPosition(monster, monster.Row - 1, monster.Column);
+                }
+            }
+
+
+            if (playerColumn > monster.Column)
+            {
+                if (IsValidMonsterMove(monster.Row, monster.Column + 1, playerSymbol))
+                {
+                    // Update monster's position
+                    UpdateMonsterPosition(monster, monster.Row, monster.Column + 1);
+                }
+            }
+            else if (playerColumn < monster.Column)
+            {
+                if (IsValidMonsterMove(monster.Row, monster.Column - 1, playerSymbol))
+                {
+                    // Update monster's position
+                    UpdateMonsterPosition(monster, monster.Row, monster.Column - 1);
+                }
+            }
+        }
+    }
+
+    private void UpdateMonsterPosition(Monster monster, int newRow, int newColumn)
+    {
+        // Update monster's position
+        this.field[monster.Row, monster.Column] = DefaultFieldSymbol;
+        monster.Row = newRow;
+        monster.Column = newColumn;
+        this.field[newRow, newColumn] = DefaultMonsterSymbol;
+    }
+
 
     private void PrintCharacterInfo(BaseGameModel character)
         => Console.WriteLine($"Health: {character.Health}   Mana: {character.Mana}");
 
+    private bool IndicesAreInBoundsOfMatrix(int row, int column)
+        => row >= 0 && row < this.field.GetLength(0) && column >= 0
+           && column < this.field.GetLength(1);
+
+    private bool IsValidMonsterMove(int row, int column, char playerSymbol)
+        => IndicesAreInBoundsOfMatrix(row, column) && AreValidMonsterCoordinates(row, column, playerSymbol);
+
     private bool IsValidMove(int row, int column)
-        => row >= 0 && row < this.field.GetLength(0) && column >= 0 
-           && column < this.field.GetLength(1) 
+        => IndicesAreInBoundsOfMatrix(row, column)
            && this.field[row, column] != DefaultMonsterSymbol;
 
     private bool MoveCharacter(char direction, ref int characterRow, ref int characterColumn, char characterSymbol)
@@ -310,7 +492,7 @@ internal class GameEngine : IGameEngine
     {
         Console.WriteLine("Choose action");
         Console.WriteLine("1) Attack");
-        Console.WriteLine("2) Move");
+        Console.WriteLine($"2) Move{Environment.NewLine}");
 
         int choice;
         do

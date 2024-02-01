@@ -15,6 +15,7 @@ public static class GameConstants
     {
         public const int FieldSize = 10;
         public const char DefaultFieldSymbol = '|';
+        public const char DefaultDeadPlayerSymbol = 'X';
     }
 
     public static class Multipliers
