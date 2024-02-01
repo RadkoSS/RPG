@@ -27,10 +27,14 @@ internal class GameEngine : IGameEngine
 
         MenuOptions command = MenuOptions.CharacterSelect;
 
+        BaseGameModel? character;
+
+        int characterChoice = LoadCharacterSelect();
+
+        character = await SetupGame(characterChoice);
+
         while (command != MenuOptions.Exit)
         {
-            BaseGameModel? character = null;
-
             switch (command)
             {
                 case MenuOptions.MainMenu:
@@ -38,35 +42,21 @@ internal class GameEngine : IGameEngine
                     break;
 
                 case MenuOptions.CharacterSelect:
-                    int characterChoice = LoadCharacterSelect();
 
-                    switch (characterChoice)
+                    characterChoice = LoadCharacterSelect();
+                    character = await SetupGame(characterChoice);
+
+                    if (character == null)
                     {
-                        case WarriorMenuNumber:
-                            character = new Warrior();
-                            break;
-                        case ArcherMenuNumber:
-                            character = new Archer();
-                            break;
-                        case MageMenuNumber:
-                            character = new Mage();
-                            break;
-                        default:
-                            Console.WriteLine("Invalid character selected!");
-                            continue;
+                        continue;
                     }
-                    AskForStatsBuff(character);
-                    InitField(character.Symbol);
-
-                    await this.statsLogger.LogCharacterChoice(character, characterChoice);
-
                     break;
 
                 case MenuOptions.InGame:
 
                     if (character == null)
                     {
-                        Console.WriteLine("Please, select a character before starting the game!");
+                        Console.WriteLine("Please, choose a character first!");
                         continue;
                     }
 
@@ -83,6 +73,43 @@ internal class GameEngine : IGameEngine
 
         Console.WriteLine();
         Console.WriteLine("Exiting to desktop...");
+    }
+
+    private async Task<BaseGameModel?> SetupGame(int characterChoice)
+    {
+        BaseGameModel? character = GetChosenCharacter(characterChoice);
+
+        if (character != null)
+        {
+            AskForStatsBuff(character);
+            InitField(character.Symbol);
+
+            await this.statsLogger.LogCharacterChoice(character, characterChoice);
+
+            BeginRpgGame(character);
+        }
+        else
+        {
+            Console.WriteLine("Please, choose a valid character!");
+        }
+
+        return character;
+    }
+
+    private BaseGameModel? GetChosenCharacter(int characterId)
+    {
+        switch (characterId)
+        {
+            case WarriorMenuNumber:
+                return new Warrior();
+            case ArcherMenuNumber:
+                return new Archer();
+            case MageMenuNumber:
+                return new Mage();
+            default:
+                Console.WriteLine("Invalid character selected!");
+                return null;
+        }
     }
 
     private void BeginRpgGame(BaseGameModel character)
@@ -108,27 +135,17 @@ internal class GameEngine : IGameEngine
 
             PrintField();
 
-            Console.WriteLine("Choose action");
-            Console.WriteLine("1) Attack");
-            Console.WriteLine("2) Move");
+            int action = GetActionChoice();
 
-            int choice;
-
-            do
-            {
-                bool result = int.TryParse(Console.ReadLine(), out choice);
-
-                if (!result)
-                {
-                    Console.WriteLine("Invalid choice!");
-                }
-
-            } while (choice < 1 || choice > 2);
-
-            switch (choice)
+            switch (action)
             {
                 case 1:
+                    // ToDo: Implement attack logic...
+                    break;
+
+                case 2:
                     char direction = char.ToLower(Console.ReadKey().KeyChar);
+                    Console.WriteLine();
 
                     bool movePerformed = MoveCharacter(direction, ref characterRow, ref characterColumn, character.Symbol);
 
@@ -137,9 +154,6 @@ internal class GameEngine : IGameEngine
                         Console.WriteLine("Invalid move!");
                         continue;
                     }
-
-                    break;
-                case 2:
 
                     break;
             }
@@ -156,7 +170,9 @@ internal class GameEngine : IGameEngine
         => Console.WriteLine($"Health: {character.Health}   Mana: {character.Mana}");
 
     private bool IsValidMove(int row, int column)
-        => row > 0 && row < this.field.GetLength(0) && column > 0 && column < this.field.GetLength(1);
+        => row >= 0 && row < this.field.GetLength(0) && column >= 0 
+           && column < this.field.GetLength(1) 
+           && this.field[row, column] != DefaultMonsterSymbol;
 
     private bool MoveCharacter(char direction, ref int characterRow, ref int characterColumn, char characterSymbol)
     {
@@ -290,6 +306,27 @@ internal class GameEngine : IGameEngine
         return position != DefaultMonsterSymbol && position != playerSymbol;
     }
 
+    private int GetActionChoice()
+    {
+        Console.WriteLine("Choose action");
+        Console.WriteLine("1) Attack");
+        Console.WriteLine("2) Move");
+
+        int choice;
+        do
+        {
+            bool result = int.TryParse(Console.ReadLine(), out choice);
+
+            if (!result)
+            {
+                Console.WriteLine("Invalid choice!");
+            }
+
+        } while (choice < 1 || choice > 2);
+
+        return choice;
+    }
+
     private void AskForStatsBuff(BaseGameModel character)
     {
         Console.WriteLine($"Would you like to buff up your stats before starting? (Limit: {MaxBuffPoints} points total)");
@@ -354,7 +391,7 @@ internal class GameEngine : IGameEngine
         }
         else
         {
-            Console.WriteLine("Character stays unbuffed!");
+            Console.WriteLine($"{Environment.NewLine}Character stays unbuffed!");
         }
     }
 
