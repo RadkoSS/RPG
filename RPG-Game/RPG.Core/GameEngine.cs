@@ -317,7 +317,6 @@ internal class GameEngine : IGameEngine
             {
                 if (IsValidMonsterMove(monster.Row - 1, monster.Column, playerSymbol))
                 {
-                    // Update monster's position
                     UpdateMonsterPosition(monster, monster.Row - 1, monster.Column);
                 }
             }
@@ -327,7 +326,6 @@ internal class GameEngine : IGameEngine
             {
                 if (IsValidMonsterMove(monster.Row, monster.Column + 1, playerSymbol))
                 {
-                    // Update monster's position
                     UpdateMonsterPosition(monster, monster.Row, monster.Column + 1);
                 }
             }
@@ -335,7 +333,6 @@ internal class GameEngine : IGameEngine
             {
                 if (IsValidMonsterMove(monster.Row, monster.Column - 1, playerSymbol))
                 {
-                    // Update monster's position
                     UpdateMonsterPosition(monster, monster.Row, monster.Column - 1);
                 }
             }
@@ -344,7 +341,6 @@ internal class GameEngine : IGameEngine
 
     private void UpdateMonsterPosition(Monster monster, int newRow, int newColumn)
     {
-        // Update monster's position
         this.field[monster.Row, monster.Column] = DefaultFieldSymbol;
         monster.Row = newRow;
         monster.Column = newColumn;
