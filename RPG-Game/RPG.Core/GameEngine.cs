@@ -162,6 +162,12 @@ internal class GameEngine : IGameEngine
 
                     monsterToDamage.Health -= character.Damage;
 
+                    if (!monsterToDamage.IsAlive)
+                    {
+                        deadMonsters.Add(monsterToDamage);
+                        RemoveDeadMonstersFromField(deadMonsters);
+                    }
+
                     MoveMonstersTowardsPlayer(characterRow, characterColumn, monsters, character.Symbol);
 
                     AttackPlayerIfNearby(characterRow, characterColumn, monsters, character);
@@ -207,19 +213,23 @@ internal class GameEngine : IGameEngine
         Console.WriteLine($"{Environment.NewLine}YOU DIED. GAME OVER!{Environment.NewLine}");
     }
 
-    private void AttackPlayerIfNearby(int characterRow, int characterColumn, HashSet<Monster> monsters, BaseGameModel character)
+    private void AttackPlayerIfNearby(int characterRow, int characterColumn, ICollection<Monster> monsters, BaseGameModel character)
     {
         foreach (Monster monster in monsters)
         {
-            if ((monster.Row == characterRow - 1 || monster.Row == characterRow + 1)
-              && (monster.Column == characterColumn - 1 || monster.Column == characterColumn + 1))
+            int rowDifference = Math.Abs(monster.Row - characterRow);
+            int columnDifference = Math.Abs(monster.Column - characterColumn);
+
+            // Check if the monster is adjacent to the player
+            if (rowDifference <= 1 && columnDifference <= 1)
             {
+                // Attack the player
                 character.Health -= monster.Damage;
             }
 
             if (!character.IsAlive)
             {
-                return;
+                return; // No need to continue attacking if the player is already dead
             }
         }
     }
@@ -580,7 +590,7 @@ internal class GameEngine : IGameEngine
     private MenuOptions ReadCommand()
     {
         Console.WriteLine();
-        Console.WriteLine($"Available options: {Environment.NewLine}{(int)MenuOptions.MainMenu}) MainMenu{Environment.NewLine}{(int)MenuOptions.CharacterSelect}) Character selection{Environment.NewLine}{(int)MenuOptions.InGame}) Start a new game{Environment.NewLine}{(int)MenuOptions.Exit} Exit to desktop.");
+        Console.WriteLine($"Available options: {Environment.NewLine}{(int)MenuOptions.MainMenu}) MainMenu{Environment.NewLine}{(int)MenuOptions.CharacterSelect}) Character selection{Environment.NewLine}{(int)MenuOptions.InGame}) Start a new game{Environment.NewLine}{(int)MenuOptions.Exit}) Exit to desktop.");
 
         bool isValidCommand;
         MenuOptions command;
