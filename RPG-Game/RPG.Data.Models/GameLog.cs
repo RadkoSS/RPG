@@ -8,6 +8,7 @@ public class GameLog
     public GameLog()
     {
         this.Id = Guid.NewGuid();
+        this.CreatedOn = DateTime.UtcNow;
     }
 
     [Key]

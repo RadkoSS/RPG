@@ -5,9 +5,7 @@ using static Common.GameConstants.Multipliers;
 public abstract class BaseGameModel
 {
     protected BaseGameModel()
-    {
-        this.Setup();
-    }
+    {}
 
     public int Strength { get; set; }
 
@@ -24,6 +22,8 @@ public abstract class BaseGameModel
     public int Mana { get; set; }
 
     public int Damage { get; set; }
+
+    public bool IsAlive => this.Health > 0;
 
     public void Setup()
     {

@@ -20,9 +20,24 @@ public class RaceStat
 
     public Race Race { get; set; } = null!;
 
+    [Required]
     public int Strength { get; set; }
 
+    [Required]
     public int Agility { get; set; }
 
+    [Required]
     public int Intelligence { get; set; }
+
+    [Required]
+    public int Range { get; set; }
+
+    [Required]
+    public int Health { get; set; }
+
+    [Required]
+    public int Mana { get; set; }
+
+    [Required]
+    public int Damage { get; set; }
 }

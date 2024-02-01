@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RPG.Common\RPG.Common.csproj" />
     <ProjectReference Include="..\RPG.Data.Models\RPG.Data.Models.csproj" />
+    <ProjectReference Include="..\RPG.GameModels\RPG.GameModels.csproj" />
   </ItemGroup>
 
 </Project>

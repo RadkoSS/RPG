@@ -85,10 +85,22 @@ namespace RPG.Data.Migrations
                     b.Property<int>("Agility")
                         .HasColumnType("int");
 
+                    b.Property<int>("Damage")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Health")
+                        .HasColumnType("int");
+
                     b.Property<int>("Intelligence")
                         .HasColumnType("int");
 
+                    b.Property<int>("Mana")
+                        .HasColumnType("int");
+
                     b.Property<int>("RaceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Range")
                         .HasColumnType("int");
 
                     b.Property<int>("Strength")

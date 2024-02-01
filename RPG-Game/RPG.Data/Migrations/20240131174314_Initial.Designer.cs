@@ -12,7 +12,7 @@ using RPG.Data;
 namespace RPG.Data.Migrations
 {
     [DbContext(typeof(RpgDbContext))]
-    [Migration("20240131135046_Initial")]
+    [Migration("20240131174314_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -88,10 +88,22 @@ namespace RPG.Data.Migrations
                     b.Property<int>("Agility")
                         .HasColumnType("int");
 
+                    b.Property<int>("Damage")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Health")
+                        .HasColumnType("int");
+
                     b.Property<int>("Intelligence")
                         .HasColumnType("int");
 
+                    b.Property<int>("Mana")
+                        .HasColumnType("int");
+
                     b.Property<int>("RaceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Range")
                         .HasColumnType("int");
 
                     b.Property<int>("Strength")

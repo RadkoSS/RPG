@@ -34,7 +34,11 @@ namespace RPG.Data.Migrations
                     RaceId = table.Column<int>(type: "int", nullable: false),
                     Strength = table.Column<int>(type: "int", nullable: false),
                     Agility = table.Column<int>(type: "int", nullable: false),
-                    Intelligence = table.Column<int>(type: "int", nullable: false)
+                    Intelligence = table.Column<int>(type: "int", nullable: false),
+                    Range = table.Column<int>(type: "int", nullable: false),
+                    Health = table.Column<int>(type: "int", nullable: false),
+                    Mana = table.Column<int>(type: "int", nullable: false),
+                    Damage = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

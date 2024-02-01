@@ -1,6 +1,8 @@
 ﻿namespace RPG.Data.Contracts;
 
+using GameModels;
+
 public interface IStatsLogger
 {
-    void LogCharacterChoice();
+    Task LogCharacterChoice(BaseGameModel character, int raceId);
 }

@@ -7,6 +7,8 @@ public static class GameConstants
         public const int WarriorMenuNumber = 1;
         public const int ArcherMenuNumber = 2;
         public const int MageMenuNumber = 3;
+
+        public const int MaxBuffPoints = 3;
     }
 
     public static class MatrixFieldConstants
@@ -59,6 +61,6 @@ public static class GameConstants
         public const int MaxIntelligence = 4;
 
         public const int DefaultRange = 1;
-        public const char DefaultSymbol = 'O';
+        public const char DefaultMonsterSymbol = 'O';
     }
 }
